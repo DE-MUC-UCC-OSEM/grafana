@@ -9,7 +9,7 @@ RUN mkdir -p /tmp/grafana-src && \
     mkdir -p /tmp/grafana-bin && \
     curl -L https://github.com/grafana/grafana/archive/refs/tags/v$GRAFANA_VERSION.tar.gz | tar --directory /tmp/grafana-src --strip-components 1 -zxvf - && \
     curl -L https://downloads.mend.io/cli/linux_amd64/mend -o /tmp/mend && chmod +x /tmp/mend && \
-    /tmp/mend dep --dir /tmp/grafana-src --extended -s "OpenScape UC Portfolio//OSEM third party applications//grafana-osem-sourcecode - $GRAFANA_VERSION-r$RELEASE_VERSION" -u
+    /tmp/mend dep --dir /tmp/grafana-src --extended -s "OpenScape UC Portfolio//OSEM third party applications//grafana-osem-sourcecode - $GRAFANA_VERSION-r$RELEASE_VERSION" -u && \
     curl -L https://dl.grafana.com/oss/release/grafana-$GRAFANA_VERSION.linux-$(uname -p | sed s/aarch64/arm64/ | sed s/x86_64/amd64/).tar.gz | tar --directory /tmp/grafana-bin --strip-components 1 -zxvf -
 
 FROM opensuse/tumbleweed:latest AS base
