@@ -1,0 +1,87 @@
+name: Build Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        type: string
+        required: true
+        description: 'Internal release version counter'
+        default: '0'
+      grafana:
+        type: string
+        required: true
+        description: 'Grafana release version'
+        default: '11.1.4'
+
+jobs:
+  push_to_registry:
+    name: Push image to Github container registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ github.event.inputs.grafana }}-${{ github.event.inputs.release }}-tumbleweed
+            #type=raw,value=latest
+      
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: |
+            GRAFANA_VERSION=${{ github.event.inputs.grafana }}
+            RELEASE_VERSION=${{ github.event.inputs.release }}
+            MEND_EMAIL=${{ secrets.MEND_EMAIL }}
+            MEND_URL=${{ secrets.MEND_URL }}
+            MEND_USER_KEY=${{ secrets.MEND_USER_KEY }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Scan Docker Image
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
+          GRAFANA_VERSION: ${{ github.event.inputs.grafana }}
+          RELEASE_VERSION: ${{ github.event.inputs.release }}
+          MEND_EMAIL: ${{ secrets.MEND_EMAIL }}
+          MEND_URL: ${{ secrets.MEND_URL }}
+          MEND_USER_KEY: ${{ secrets.MEND_USER_KEY }}
+        run: |
+          curl -L https://downloads.mend.io/cli/linux_amd64/mend -o /tmp/mend && chmod +x /tmp/mend && \
+          /tmp/mend image $IMAGE -s "OpenScape UC Portfolio//OSEM third party applications//grafana-osem-docker-image - $GRAFANA_VERSION-r$RELEASE_VERSION-tumbleweed"
+        working-directory: /tmp
+
+      - name: Create a Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}
+          release_name: Grafana ${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
+          body: |
+            Grafana build details
+            - Grafana: ${{ github.event.inputs.grafana }}
+
+            docker run -dit ghcr.io/${{ github.repository }}:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
+          draft: false
+          prerelease: false
