@@ -7,7 +7,7 @@ Using pre-built Grafana executable version from Grafana github project. Everythi
 
 You can run the image via Docker
 ```
-docker run -dit ghcr.io/svenbeisiegel/grafana:11.1.4-r0-tumbleweed
+docker run -dit ghcr.io/de-muc-ucc-osem/grafana:11.1.4-r0-tumbleweed
 ```
 ## Configuration
 
