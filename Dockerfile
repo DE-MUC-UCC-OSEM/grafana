@@ -19,7 +19,7 @@ RUN mkdir -p /etc/grafana && \
     mkdir -p /opt/grafana/{logs,data} && \
     mkdir -p /opt/grafana/data/plugins && \
     groupadd -g 3000 -r grafana && useradd -u 3000 -d /tmp -g grafana grafana && \
-    rpm -e --allmatches $(rpm -qa --qf "%{NAME}\n" | grep -v -E "bash|coreutils|filesystem|glibc$|libacl1|libattr1|libcap2|libgcc_s1|libgmp|libncurses|libpcre1|libreadline|libselinux|libstdc\+\+|openSUSE-release|system-user-root|terminfo-base|libpcre2") && \
+    rpm -e --allmatches $(rpm -qa --qf "%{NAME}\n" | grep -v -E "bash|coreutils|filesystem|glibc$|libacl1|libattr1|libcap2|libgcc_s1|libgmp|libncurses|libpcre1|libreadline|libselinux|libstdc\+\+|openSUSE-release|system-user-root|terminfo-base|libpcre2|sed") && \
     rm -Rf /etc/zypp && \
     rm -Rf /usr/lib/zypp* && \
     rm -Rf /var/{cache,log,run}/* && \
@@ -37,9 +37,11 @@ COPY --from=grafana /tmp/grafana-bin/public /opt/grafana/public
 COPY --from=grafana /tmp/grafana-bin/LICENSE /opt/grafana/LICENSE
 COPY --from=grafana /tmp/grafana-bin/VERSION /opt/grafana/VERSION
 
-RUN chown -R grafana:grafana /opt/grafana && \
-    chown -R grafana:grafana /etc/grafana && \
-    mv /opt/grafana/conf/sample.ini /etc/grafana/grafana.ini
+RUN mv /opt/grafana/conf/sample.ini /etc/grafana/grafana.ini && \
+    chown -R grafana:grafana /opt/grafana && \
+    chown -R grafana:grafana /etc/grafana
+
+COPY --chown=grafana:grafana --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
 
 FROM scratch
 
@@ -50,5 +52,7 @@ USER 3000:3000
 EXPOSE 3000
 
 WORKDIR /opt/grafana
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD [ "/opt/grafana/bin/grafana", "server", "--homepath=/opt/grafana", "--config=/etc/grafana/grafana.ini", "--packaging=docker" ]
