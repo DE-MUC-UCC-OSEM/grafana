@@ -37,10 +37,10 @@ COPY --from=grafana /tmp/grafana-bin/public /opt/grafana/public
 COPY --from=grafana /tmp/grafana-bin/LICENSE /opt/grafana/LICENSE
 COPY --from=grafana /tmp/grafana-bin/VERSION /opt/grafana/VERSION
 
-RUN chown -R grafana:grafana /opt/grafana && \
+RUN mv /opt/grafana/conf/sample.ini /etc/grafana/grafana.ini && \
+    chown -R grafana:grafana /opt/grafana && \
     chown -R grafana:grafana /etc/grafana
 
-COPY --chown=grafana:grafana --chmod=740 grafana.ini /etc/grafana/grafana.ini
 COPY --chown=grafana:grafana --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
 
 FROM scratch
