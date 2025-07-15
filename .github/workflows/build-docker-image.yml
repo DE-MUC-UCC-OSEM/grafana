@@ -12,7 +12,7 @@ on:
         type: string
         required: true
         description: 'Grafana release version'
-        default: '11.1.4'
+        default: '12.0.2'
 
 jobs:
   push_to_registry:
