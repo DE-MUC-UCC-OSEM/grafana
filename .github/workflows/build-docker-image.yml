@@ -12,7 +12,7 @@ on:
         type: string
         required: true
         description: 'Grafana release version'
-        default: '12.0.2'
+        default: '12.3.0'
 
 jobs:
   push_to_registry:
@@ -59,6 +59,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Scan Docker Image
+        if: ${{ success() }}
         env:
           IMAGE: ghcr.io/${{ github.repository }}:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
           GRAFANA_VERSION: ${{ github.event.inputs.grafana }}
@@ -72,11 +73,26 @@ jobs:
         working-directory: /tmp
 
       - name: Create a release
+        if: ${{ success() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GRAFANA_VERSION: ${{ github.event.inputs.grafana }}
           RELEASE_VERSION: ${{ github.event.inputs.release }}
         run: |
+          # Add step summary
+          {
+            echo "# Grafana"
+            echo ""
+            echo "Running in an openSUSE Tumbleweed Image."
+            echo ""
+            echo "ghcr.io/de-muc-ucc-osem/grafana:$GRAFANA_VERSION-r$RELEASE_VERSION-tumbleweed"
+            echo ""
+            echo "### Included versions"
+            echo ""
+            echo "| Package Name              | Version         |"
+            echo "|---------------------------|-----------------|"
+            echo "| Grafana | $GRAFANA_VERSION |"
+          } >> $GITHUB_STEP_SUMMARY
           echo -e "Grafana build details\n- Grafana: $GRAFANA_VERSION" > rn
           gh release create "$GRAFANA_VERSION-r$RELEASE_VERSION-tumbleweed" \
               --repo="$GITHUB_REPOSITORY" \
