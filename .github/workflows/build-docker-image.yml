@@ -94,7 +94,7 @@ jobs:
             echo "| Grafana | $GRAFANA_VERSION |"
           } >> $GITHUB_STEP_SUMMARY
           
-          cat > ${{ github.workspace }}/release-notes.md <<"EOF"
+          cat > ${{ github.workspace }}/release-notes.md <<EOF
           ## Grafana release ${{ github.event.inputs.grafana }}-${{ github.event.inputs.release }}
           - **Grafana version**: $GRAFANA_VERSION
           ```
