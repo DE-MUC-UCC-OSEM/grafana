@@ -12,7 +12,7 @@ on:
         type: string
         required: true
         description: 'Grafana release version'
-        default: '12.3.0'
+        default: '12.4.0'
 
 jobs:
   push_to_registry:
@@ -26,8 +26,15 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-      
-      - name: Log in to Docker Hub
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Artifactory Container Registry
         uses: docker/login-action@v3
         with:
           registry: artifactory.mitel.com
@@ -38,7 +45,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ vars.ARTIFACTORY_IMG_URL }}/grafana
+          images: |
+            ${{ vars.ARTIFACTORY_IMG_URL }}/grafana
+            ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
       
