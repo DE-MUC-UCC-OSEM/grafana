@@ -46,7 +46,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ vars.ARTIFACTORY_IMG_URL }}/grafana
+            ${{ vars.ARTIFACTORY_IMG_URL_PUBLIC }}/grafana
             ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
@@ -69,7 +69,7 @@ jobs:
       - name: Scan Docker Image
         if: ${{ success() }}
         env:
-          IMAGE: ${{ vars.ARTIFACTORY_IMG_URL }}/grafana:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
+          IMAGE: ${{ vars.ARTIFACTORY_IMG_URL_PUBLIC }}/grafana:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
           GRAFANA_VERSION: ${{ github.event.inputs.grafana }}
           RELEASE_VERSION: ${{ github.event.inputs.release }}
           MEND_EMAIL: ${{ secrets.MEND_EMAIL }}
@@ -86,7 +86,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GRAFANA_VERSION: ${{ github.event.inputs.grafana }}
           RELEASE_VERSION: ${{ github.event.inputs.release }}
-          IMAGE: ${{ vars.ARTIFACTORY_IMG_URL }}/grafana:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
+          IMAGE: ${{ vars.ARTIFACTORY_IMG_URL_PUBLIC }}/grafana:${{ github.event.inputs.grafana }}-r${{ github.event.inputs.release }}-tumbleweed
         run: |
           # Add step summary
           {
